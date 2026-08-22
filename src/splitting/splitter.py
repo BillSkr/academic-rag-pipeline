@@ -1,6 +1,5 @@
 """Chunking logic."""
 
-from typing import List
 
 from src.config import settings
 
@@ -9,24 +8,24 @@ try:
 
     _ENCODING = tiktoken.get_encoding("cl100k_base")
 
-    def _encode(text: str) -> List[int]:
+    def _encode(text: str) -> list[int]:
         return _ENCODING.encode(text)
 
-    def _decode(tokens: List[int]) -> str:
+    def _decode(tokens: list[int]) -> str:
         return _ENCODING.decode(tokens)
 
 except Exception:
-    def _encode(text: str) -> List[str]:
+    def _encode(text: str) -> list[str]:
         return text.split()
 
-    def _decode(tokens: List[str]) -> str:
+    def _decode(tokens: list[str]) -> str:
         return " ".join(tokens)
 
 
 _MIN_CHUNK_SIZE = max(1, settings.CHUNK_SIZE_TOKENS // 10)
 
 
-def split_document_to_chunks(document: dict) -> List[dict]:
+def split_document_to_chunks(document: dict) -> list[dict]:
     """Split a single document into token-based chunks."""
     required_keys = {"doc_id", "title", "authors", "year", "text"}
     missing = required_keys - document.keys()
@@ -39,7 +38,7 @@ def split_document_to_chunks(document: dict) -> List[dict]:
 
     tokens = _encode(raw_text)
     i = 0
-    chunks: List[dict] = []
+    chunks: list[dict] = []
     step = settings.CHUNK_SIZE_TOKENS - settings.CHUNK_OVERLAP_TOKENS
 
     while i < len(tokens):

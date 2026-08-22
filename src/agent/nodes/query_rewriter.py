@@ -9,8 +9,8 @@ to improve the next retrieval attempt.
 
 import logging
 
-from src.agent.state import RAGState
 from src.agent.model import LLMFactory
+from src.agent.state import RAGState
 
 logger = logging.getLogger(__name__)
 

@@ -12,12 +12,9 @@ Run once before starting the API server, or again whenever new papers are added.
 
 import logging
 
-from tqdm import tqdm
-
-from src.config import settings
+from src.embeddings.embedder import OllamaEmbedder
 from src.ingestion import loader
 from src.splitting import splitter
-from src.embeddings.embedder import OllamaEmbedder
 from src.vectordb.chroma_store import ChromaVectorStore
 
 logger = logging.getLogger(__name__)

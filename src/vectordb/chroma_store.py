@@ -12,9 +12,8 @@ ChromaVectorStore provides:
 The collection is persisted to disk at settings.CHROMA_PERSIST_DIR.
 """
 
-import re
 import logging
-from typing import List
+import re
 
 import chromadb
 
@@ -31,7 +30,7 @@ class ChromaVectorStore:
     def __new__(cls, *args, **kwargs):
         # Reuse the same client and collection across all callers
         if not cls._instance:
-            cls._instance = super(ChromaVectorStore, cls).__new__(cls)
+            cls._instance = super().__new__(cls)
         return cls._instance
 
     def __init__(self):
@@ -46,10 +45,10 @@ class ChromaVectorStore:
 
     def upsert_documents(
         self,
-        ids: List[str],
-        embeddings: List[List[float]],
-        metadatas: List[dict],
-        documents: List[str],
+        ids: list[str],
+        embeddings: list[list[float]],
+        metadatas: list[dict],
+        documents: list[str],
     ) -> None:
         """Persist a batch of documents with their embeddings and metadata.
 
@@ -61,11 +60,11 @@ class ChromaVectorStore:
 
     def similarity_search(
         self,
-        query_embedding: List[float],
+        query_embedding: list[float],
         k: int = settings.TOP_K,
         metadata_filter: dict = None,
         query_text: str = None,
-    ) -> List[dict]:
+    ) -> list[dict]:
         """Retrieve the top-k most similar chunks using hybrid retrieval.
 
         Steps:

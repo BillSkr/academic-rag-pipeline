@@ -18,19 +18,19 @@ Field descriptions:
     enough            : True when the retriever found sufficient chunks to synthesize.
 """
 
-from typing import List, TypedDict
+from typing import TypedDict
 
 
 class RAGState(TypedDict, total=False):
     """Mutable state dict passed between all nodes in the LangGraph pipeline."""
 
-    chat_history: List[dict]       # previous turns for multi-turn conversations
+    chat_history: list[dict]       # previous turns for multi-turn conversations
     user_query: str                # original user question (never modified)
-    sub_queries: List[str]         # decomposed sub-queries from the analyzer
+    sub_queries: list[str]         # decomposed sub-queries from the analyzer
     current_query: str             # active search query (rewriter may update this)
-    retrieved_chunks: List[dict]   # chunks returned by the retriever node
+    retrieved_chunks: list[dict]   # chunks returned by the retriever node
     attempts: int                  # retrieval attempt counter
     response: str                  # final synthesized answer
-    citations: List[dict]          # source chunks cited in the answer
+    citations: list[dict]          # source chunks cited in the answer
     rejected: bool                 # True → query was out of scope; graph ends early
     enough: bool                   # True → retriever found sufficient context

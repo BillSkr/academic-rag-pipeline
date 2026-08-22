@@ -11,7 +11,6 @@ import logging
 import os
 import time
 from concurrent.futures import ThreadPoolExecutor
-from typing import List
 
 from ollama import Client as OllamaClient
 
@@ -32,7 +31,7 @@ class OllamaEmbedder:
     def __new__(cls, *args, **kwargs):
         # Only create one instance per process
         if cls._instance is None:
-            cls._instance = super(OllamaEmbedder, cls).__new__(cls)
+            cls._instance = super().__new__(cls)
         return cls._instance
 
     def __init__(self, host: str = None, timeout: int = 30) -> None:
@@ -52,7 +51,7 @@ class OllamaEmbedder:
             host,
         )
 
-    def embed(self, text: str, max_retries: int = 3) -> List[float]:
+    def embed(self, text: str, max_retries: int = 3) -> list[float]:
         """Convert a string of text into a dense vector.
 
         Retries up to `max_retries` times on transient network errors.
@@ -95,7 +94,7 @@ class OllamaEmbedder:
             logger.debug("Successfully generated embedding (dim=%d)", len(embedding_vector))
             return embedding_vector
 
-    def embed_batch(self, texts: List[str], max_retries: int = 3) -> List[List[float]]:
+    def embed_batch(self, texts: list[str], max_retries: int = 3) -> list[list[float]]:
         """Embed a list of texts concurrently using a thread pool.
 
         Args:

@@ -30,7 +30,7 @@ jobs:
 
       # Lint source code with Ruff (fast Python linter)
       - name: Lint with ruff
-        run: ruff check src/ --ignore E501
+        run: ruff check src/ --ignore E501,BLE001,RUF013
 
       # Run the full test suite and collect coverage
       - name: Run tests

@@ -6,8 +6,8 @@ Node 3 – Synthesizer.
 * Restricts the LLM to use only the provided snippets.
 """
 
-from src.agent.state import RAGState
 from src.agent.model import LLMFactory
+from src.agent.state import RAGState
 
 
 def synthesize_answer(state: "RAGState") -> "RAGState":

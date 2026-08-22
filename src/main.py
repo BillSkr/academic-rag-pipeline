@@ -15,10 +15,9 @@ import os
 
 from dotenv import load_dotenv
 
-from src.rag.pipeline import build_vector_store
 from src.agent.graph import create_rag_graph
 from src.agent.state import RAGState  # RAGState lives in state.py, not graph.py
-
+from src.rag.pipeline import build_vector_store
 
 # Load .env file before accessing any environment variables
 load_dotenv()

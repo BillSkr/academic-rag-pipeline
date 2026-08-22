@@ -11,8 +11,9 @@ Usage:
     answer = model.generate(system_prompt="...", user_prompt="...")
 """
 
-from src.config import settings
 from litellm import completion
+
+from src.config import settings
 
 
 class LLMFactory:
@@ -27,7 +28,7 @@ class LLMFactory:
     def __new__(cls, *args, **kwargs):
         # Singleton: reuse the same instance across all callers
         if not cls._instance:
-            cls._instance = super(LLMFactory, cls).__new__(cls)
+            cls._instance = super().__new__(cls)
         return cls._instance
 
     def __init__(self):

@@ -11,11 +11,12 @@ Responsibilities:
 
 import logging
 
+from sentence_transformers import CrossEncoder
+
 from src.agent.state import RAGState
 from src.config import settings
 from src.embeddings.embedder import OllamaEmbedder
 from src.vectordb.chroma_store import ChromaVectorStore
-from sentence_transformers import CrossEncoder
 
 logger = logging.getLogger(__name__)
 

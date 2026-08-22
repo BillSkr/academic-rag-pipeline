@@ -7,16 +7,16 @@ Exposes two endpoints:
 
 import json
 import math
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
-from src.config import settings
 from src.agent.graph import create_rag_graph
 from src.agent.state import RAGState
-from src.rag.pipeline import build_vector_store
 from src.embeddings.embedder import OllamaEmbedder
+from src.rag.pipeline import build_vector_store
 
 # Simple In-Memory Semantic Cache
 _semantic_cache = []
@@ -64,8 +64,8 @@ async def query(request: QueryRequest):
         # Check cache for similar query
         for cached in _semantic_cache:
             if cosine_similarity(query_embedding, cached["embedding"]) > 0.95:
-                async def cached_stream():
-                    yield f"data: {json.dumps({'status': 'completed', 'response': cached['response'], 'citations': cached['citations']})}\n\n"
+                async def cached_stream(c=cached):
+                    yield f"data: {json.dumps({'status': 'completed', 'response': c['response'], 'citations': c['citations']})}\n\n"
                 return StreamingResponse(cached_stream(), media_type="text/event-stream")
     except Exception as e:
         print(f"Embedding failed for cache check: {e}")

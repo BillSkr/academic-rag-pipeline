@@ -8,8 +8,9 @@ Responsibilities:
 """
 
 import json
-from src.agent.state import RAGState
+
 from src.agent.model import LLMFactory
+from src.agent.state import RAGState
 
 
 def analyze_query(state: "RAGState") -> "RAGState":

@@ -15,13 +15,12 @@ Workflow:
 
 import json
 import time
+import urllib.parse
 import xml.etree.ElementTree as ET
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import Any
 
 import requests
-import urllib.parse
-
 
 ESEARCH_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
 EFETCH_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
@@ -32,7 +31,7 @@ OUTPUT_PATH = Path(__file__).resolve().parents[2] / "data" / "corpus.json"
 SLEEP_SECONDS = 1
 
 
-def search_pubmed(term: str, retmax: int) -> List[str]:
+def search_pubmed(term: str, retmax: int) -> list[str]:
     """Query the PubMed ESearch API and return a list of PMIDs."""
     url = (
         f"{ESEARCH_URL}?db={DB}&term={urllib.parse.quote(term)}"
@@ -41,10 +40,10 @@ def search_pubmed(term: str, retmax: int) -> List[str]:
     response = requests.get(url, timeout=30)
     response.raise_for_status()
     data = response.json()
-    pmids: List[str] = data.get("esearchresult", {}).get("idlist", [])
+    pmids: list[str] = data.get("esearchresult", {}).get("idlist", [])
     return pmids
 
-def fetch_pubmed_records(pmids: List[str]) -> str:
+def fetch_pubmed_records(pmids: list[str]) -> str:
     """Retrieve full XML records from PubMed for the given PMIDs."""
     id_string = ",".join(pmids)
     url = f"{EFETCH_URL}?db={DB}&id={id_string}&rettype=abstract&retmode=xml"
@@ -54,10 +53,10 @@ def fetch_pubmed_records(pmids: List[str]) -> str:
 
 
 
-def parse_pubmed_xml(xml_string: str) -> List[Dict[str, Any]]:
+def parse_pubmed_xml(xml_string: str) -> list[dict[str, Any]]:
     """Parse the PubMed XML and extract structured metadata for each article."""
     root = ET.fromstring(xml_string)
-    results: List[Dict[str, Any]] = []
+    results: list[dict[str, Any]] = []
 
     for article in root.findall(".//PubmedArticle"):
         pmid = article.findtext(".//PMID")
@@ -82,7 +81,7 @@ def parse_pubmed_xml(xml_string: str) -> List[Dict[str, Any]]:
     return results
 
 
-def save_corpus(records: List[Dict[str, Any]], output_path: Path) -> None:
+def save_corpus(records: list[dict[str, Any]], output_path: Path) -> None:
     """Persist the extracted article records as a JSON file."""
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with open(output_path, "w", encoding="utf-8") as f:

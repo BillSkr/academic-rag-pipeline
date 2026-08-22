@@ -12,7 +12,6 @@ The returned list of dicts always has the keys:
 import json
 import logging
 from pathlib import Path
-from typing import List
 
 import pymupdf
 
@@ -21,7 +20,7 @@ from src.config import settings
 logger = logging.getLogger(__name__)
 
 
-def load_academic_documents(source_dir: Path = None) -> List[dict]:
+def load_academic_documents(source_dir: Path = None) -> list[dict]:
     """Load academic documents, preferring corpus.json over raw files.
 
     Args:
@@ -55,7 +54,7 @@ def load_academic_documents(source_dir: Path = None) -> List[dict]:
     return documents
 
 
-def _load_from_corpus(corpus_path: Path) -> List[dict]:
+def _load_from_corpus(corpus_path: Path) -> list[dict]:
     """Read documents from the JSON corpus produced by fetch_papers.py.
 
     The 'authors' field in corpus.json is a list; it is joined into a string
