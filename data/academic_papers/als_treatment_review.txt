@@ -1,0 +1,25 @@
+Title: Recent Advances in Amyotrophic Lateral Sclerosis Treatment
+Authors: Smith J, Johnson A, Williams R
+Year: 2024
+
+Abstract:
+Amyotrophic lateral sclerosis (ALS) is a progressive neurodegenerative disease affecting motor neurons. Recent clinical trials have shown promising results for several new therapeutic approaches.
+
+Introduction:
+ALS, also known as Lou Gehrig's disease, is characterized by the degeneration of motor neurons in the brain and spinal cord. Current FDA-approved treatments include riluzole and edaravone, but these only modestly slow disease progression.
+
+New Treatment Approaches:
+1. Tofersen: An antisense oligonucleotide therapy targeting SOD1 mutations has shown significant reduction in neurofilament light chain (NfL) levels in clinical trials.
+
+2. Tofersen (Biogen): Approved in 2023 for SOD1-ALS, demonstrating slowed disease progression in Phase 3 VALOR trial.
+
+3. AMX0035 (Amylyx Pharmaceuticals): A combination of sodium phenylbutyrate and taurursodiol, approved in 2022 but later withdrawn from market due to conflicting trial results.
+
+4. Gene Therapy: Several AAV-based gene therapies are in Phase 1/2 trials, including approaches targeting C9orf72 and FUS mutations.
+
+5. Stem Cell Therapy: Mesenchymal stem cell trials (NurOwn) showed mixed results, with some patients experiencing slowed progression.
+
+6. Neuroprotective Agents: Edaravone (Radicava) remains standard of care, with new oral formulations improving patient compliance.
+
+Conclusion:
+While no cure exists for ALS, the therapeutic landscape is rapidly evolving with multiple promising candidates in late-stage clinical development.

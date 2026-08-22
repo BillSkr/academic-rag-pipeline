@@ -1,0 +1,48 @@
+# ── Core dependencies for the Academic RAG Assistant ──────────────────────────
+
+# HTTP client for fetching papers from the PubMed API
+requests>=2.31.0
+
+# Vector database for storing and searching embeddings
+chromadb>=0.4.0
+
+# Ollama Python client for local LLM and embedding inference
+ollama>=0.1.0
+
+# LangGraph for the agentic query / retrieval / synthesis state machine
+langgraph>=0.0.50
+
+# LiteLLM: unified interface to call Ollama, OpenAI, Anthropic, etc.
+litellm>=1.0.0
+
+# LangChain packages used by the evaluation script and graph nodes
+langchain-core>=0.1.0
+langchain-community>=0.0.10
+langchain-ollama>=0.1.0
+
+# Web API framework + ASGI server (required for the FastAPI app / Render deployment)
+fastapi>=0.110.0
+uvicorn[standard]>=0.27.0
+
+# Configuration and environment variable management
+pydantic>=2.0.0
+pydantic-settings>=2.0.0
+python-dotenv>=1.0.0
+
+# PDF text extraction for raw-file ingestion
+pymupdf>=1.23.0
+
+# Progress bar shown during the batch embedding step
+tqdm>=4.66.0
+
+# Accurate token counting for chunking (falls back to whitespace split if unavailable)
+tiktoken>=0.5.0
+
+# Cross-encoder re-ranking of retrieved chunks
+sentence-transformers>=2.2.0
+
+# ── Evaluation dependencies (scripts/evaluate_ragas.py only) ─────────────────
+# These are only needed when running the offline RAGAS evaluation script.
+# Comment them out if you only want to run the API server.
+ragas>=0.1.0
+datasets>=2.10.0

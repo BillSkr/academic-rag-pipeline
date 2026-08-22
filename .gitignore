@@ -1,0 +1,46 @@
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ── Virtual environments ───────────────────────────────────────────────────────
+.env
+.venv/
+env/
+venv/
+ENV/
+
+# ── Secrets — NEVER commit these ──────────────────────────────────────────────
+# .env is gitignored; commit .env.example instead
+*.env
+
+# ── Data files ────────────────────────────────────────────────────────────────
+# Exclude the PubMed corpus (can be re-fetched with fetch_papers.py)
+data/corpus.json
+# Keep the data/ directory itself tracked (for any README or placeholder)
+
+# ── ChromaDB on-disk collection ────────────────────────────────────────────────
+# The vector store is rebuilt via `python -m src.main --build-store`
+src/vectordb/chroma_collection/
+
+# ── Evaluation output ─────────────────────────────────────────────────────────
+ragas_results.json
+
+# ── IDEs ──────────────────────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ── OS generated ──────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
