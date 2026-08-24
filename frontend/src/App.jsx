@@ -37,7 +37,8 @@ function App() {
         .filter(m => m.id !== 'welcome')
         .map(m => ({ role: m.role, content: m.text }));
 
-      const response = await fetch('/query', {
+      const apiBase = import.meta.env.VITE_API_BASE_URL || '';
+      const response = await fetch(`${apiBase}/query`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question: text, history })

@@ -47,10 +47,16 @@ class LLMFactory:
         Returns:
             The model's text response as a plain string.
         """
+        import os
+        
         # Read model config from settings; fall back gracefully to Ollama defaults
         model = getattr(settings, "MODEL_NAME", "ollama/mistral:latest")
         temperature = getattr(settings, "TEMPERATURE", 0.0)
         max_tokens = getattr(settings, "MAX_TOKENS", 2048)
+        
+        # LiteLLM reads OLLAMA_API_BASE for ollama/ models
+        ollama_url = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
+        os.environ["OLLAMA_API_BASE"] = ollama_url
 
         response = completion(
             model=model,
@@ -60,5 +66,6 @@ class LLMFactory:
             ],
             temperature=temperature,
             max_tokens=max_tokens,
+            timeout=120,
         )
         return response.choices[0].message.content

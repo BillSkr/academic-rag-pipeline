@@ -34,7 +34,7 @@ class OllamaEmbedder:
             cls._instance = super().__new__(cls)
         return cls._instance
 
-    def __init__(self, host: str = None, timeout: int = 30) -> None:
+    def __init__(self, host: str = None, timeout: int = 120) -> None:
         # Guard: skip re-initialisation on subsequent OllamaEmbedder() calls
         if getattr(self, "_initialised", False):
             return

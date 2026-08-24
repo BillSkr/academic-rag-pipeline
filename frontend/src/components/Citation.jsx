@@ -2,10 +2,21 @@ import React from 'react';
 import { BookOpen } from 'lucide-react';
 
 const Citation = ({ text }) => {
+  // Handle both string citations and object citations from the backend
+  let displayText = '';
+  if (typeof text === 'object' && text !== null) {
+    const meta = text.metadata || {};
+    const title = meta.title || 'Unknown';
+    const year = meta.year || 'N/A';
+    displayText = `${title} (${year})`;
+  } else {
+    displayText = String(text || '');
+  }
+
   return (
-    <span className="citation-badge" title={text}>
+    <span className="citation-badge" title={displayText}>
       <BookOpen size={12} style={{ marginRight: '6px' }} />
-      {text.substring(0, 40)}{text.length > 40 ? '...' : ''}
+      {displayText.substring(0, 50)}{displayText.length > 50 ? '...' : ''}
     </span>
   );
 };

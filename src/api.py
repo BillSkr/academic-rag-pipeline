@@ -5,6 +5,7 @@ Exposes two endpoints:
     POST /build      – trigger a vector-store rebuild (async).
 """
 
+import asyncio
 import json
 import math
 
@@ -65,7 +66,8 @@ async def query(request: QueryRequest):
         query_embedding = None
         try:
             embedder = OllamaEmbedder()
-            query_embedding = embedder.embed(user_query)
+            # Run the blocking embed call in a thread so it doesn't freeze the event loop
+            query_embedding = await asyncio.to_thread(embedder.embed, user_query)
             
             # Check cache for similar query
             for cached in _semantic_cache:
@@ -88,31 +90,35 @@ async def query(request: QueryRequest):
             "enough": False,
         }
 
-        async for event in graph.astream_events(state, version="v1"):
-            event_type = event.get("event")
-            
-            # Stream status updates for node transitions
-            if event_type == "on_chain_start" and event.get("name") != "LangGraph":
-                node_name = event.get("name")
-                yield f"data: {json.dumps({'status': f'Running {node_name}...'})}\n\n"
+        try:
+            async for event in graph.astream_events(state, version="v1"):
+                event_type = event.get("event")
                 
-            # Stream LLM tokens from the synthesizer
-            elif event_type == "on_chat_model_stream":
-                chunk = event["data"]["chunk"]
-                if hasattr(chunk, 'content') and chunk.content:
-                    yield f"data: {json.dumps({'token': chunk.content})}\n\n"
+                # Stream status updates for node transitions
+                if event_type == "on_chain_start" and event.get("name") != "LangGraph":
+                    node_name = event.get("name")
+                    yield f"data: {json.dumps({'status': f'Running {node_name}...'})}\n\n"
                     
-            # Complete and cache
-            elif event_type == "on_chain_end" and event.get("name") == "LangGraph":
-                final_state = event["data"]["output"]
-                # Save to cache
-                if not final_state.get("rejected") and query_embedding:
-                    _semantic_cache.append({
-                        "embedding": query_embedding,
-                        "response": final_state.get("response", ""),
-                        "citations": final_state.get("citations", [])
-                    })
-                yield f"data: {json.dumps({'status': 'completed', 'response': final_state.get('response', ''), 'citations': final_state.get('citations', [])})}\n\n"
+                # Stream LLM tokens from the synthesizer
+                elif event_type == "on_chat_model_stream":
+                    chunk = event["data"]["chunk"]
+                    if hasattr(chunk, 'content') and chunk.content:
+                        yield f"data: {json.dumps({'token': chunk.content})}\n\n"
+                        
+                # Complete and cache
+                elif event_type == "on_chain_end" and event.get("name") == "LangGraph":
+                    final_state = event["data"]["output"]
+                    # Save to cache
+                    if not final_state.get("rejected") and query_embedding:
+                        _semantic_cache.append({
+                            "embedding": query_embedding,
+                            "response": final_state.get("response", ""),
+                            "citations": final_state.get("citations", [])
+                        })
+                    yield f"data: {json.dumps({'status': 'completed', 'response': final_state.get('response', ''), 'citations': final_state.get('citations', [])})}\n\n"
+        except Exception as e:
+            print(f"Graph execution error: {e}")
+            yield f"data: {json.dumps({'status': 'completed', 'response': f'Error: {str(e)}', 'citations': []})}\n\n"
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
 
