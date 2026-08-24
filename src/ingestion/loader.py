@@ -13,8 +13,6 @@ import json
 import logging
 from pathlib import Path
 
-import pymupdf
-
 from src.config import settings
 
 logger = logging.getLogger(__name__)
@@ -87,6 +85,8 @@ def parse_document(file_path: Path) -> dict | None:
     """
     try:
         if file_path.suffix.lower() == ".pdf":
+            import pymupdf
+
             # Extract text from all pages using PyMuPDF
             with pymupdf.open(file_path) as doc:
                 text = "\n".join([page.get_text() for page in doc])

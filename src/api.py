@@ -44,6 +44,18 @@ app.add_middleware(
 graph = create_rag_graph()
 
 
+def _extract_final_state(graph_output: dict) -> dict:
+    """Return the RAG state from either flat or node-wrapped LangGraph output."""
+    if not isinstance(graph_output, dict):
+        return {}
+    if "response" in graph_output:
+        return graph_output
+    for value in graph_output.values():
+        if isinstance(value, dict) and "response" in value:
+            return value
+    return {}
+
+
 class QueryRequest(BaseModel):
     question: str
     history: list = []
@@ -107,7 +119,7 @@ async def query(request: QueryRequest):
                         
                 # Complete and cache
                 elif event_type == "on_chain_end" and event.get("name") == "LangGraph":
-                    final_state = event["data"]["output"]
+                    final_state = _extract_final_state(event["data"]["output"])
                     # Save to cache
                     if not final_state.get("rejected") and query_embedding:
                         _semantic_cache.append({

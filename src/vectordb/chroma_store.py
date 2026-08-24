@@ -13,6 +13,7 @@ The collection is persisted to disk at settings.CHROMA_PERSIST_DIR.
 """
 
 import logging
+import math
 import re
 
 import chromadb
@@ -20,6 +21,14 @@ import chromadb
 from src.config import settings
 
 logger = logging.getLogger(__name__)
+
+
+def _normalize_embedding(embedding: list[float]) -> list[float]:
+    """Return a unit-length copy so Chroma distances stay on a stable scale."""
+    magnitude = math.sqrt(sum(value * value for value in embedding))
+    if magnitude == 0:
+        return embedding
+    return [value / magnitude for value in embedding]
 
 
 class ChromaVectorStore:
@@ -54,8 +63,12 @@ class ChromaVectorStore:
 
         Uses upsert so re-running the pipeline won't create duplicates.
         """
+        normalized_embeddings = [_normalize_embedding(embedding) for embedding in embeddings]
         self.collection.upsert(
-            ids=ids, embeddings=embeddings, metadatas=metadatas, documents=documents
+            ids=ids,
+            embeddings=normalized_embeddings,
+            metadatas=metadatas,
+            documents=documents,
         )
 
     def similarity_search(
@@ -105,8 +118,9 @@ class ChromaVectorStore:
         for attempt in range(3):
             try:
                 # ── Step 2: Dense vector search ───────────────────────────────
+                normalized_query_embedding = _normalize_embedding(query_embedding)
                 query_kwargs = {
-                    "query_embeddings": [query_embedding],
+                    "query_embeddings": [normalized_query_embedding],
                     "n_results": k,
                     "include": ["documents", "metadatas", "distances"],
                 }
