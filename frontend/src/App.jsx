@@ -51,20 +51,24 @@ function App() {
       const decoder = new TextDecoder('utf-8');
       
       let aiText = '';
-      let currentStatus = '';
+      let buffer = '';
 
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
 
-        const chunk = decoder.decode(value, { stream: true });
+        buffer += decoder.decode(value, { stream: true });
         
         // SSE messages are separated by double newlines
-        const lines = chunk.split('\n\n');
+        let boundary = buffer.indexOf('\n\n');
         
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const dataStr = line.substring(6);
+        while (boundary !== -1) {
+          const chunk = buffer.slice(0, boundary);
+          buffer = buffer.slice(boundary + 2);
+          boundary = buffer.indexOf('\n\n');
+          
+          if (chunk.startsWith('data: ')) {
+            const dataStr = chunk.substring(6);
             if (!dataStr) continue;
             
             try {

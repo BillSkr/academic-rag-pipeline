@@ -56,36 +56,38 @@ async def query(request: QueryRequest):
         
     user_query = request.question.strip()
 
-    # --- IMPROVEMENT 5: Semantic Caching (Performance Optimization) ---
-    try:
-        embedder = OllamaEmbedder()
-        query_embedding = embedder.embed(user_query)
-        
-        # Check cache for similar query
-        for cached in _semantic_cache:
-            if cosine_similarity(query_embedding, cached["embedding"]) > 0.95:
-                async def cached_stream(c=cached):
-                    yield f"data: {json.dumps({'status': 'completed', 'response': c['response'], 'citations': c['citations']})}\n\n"
-                return StreamingResponse(cached_stream(), media_type="text/event-stream")
-    except Exception as e:
-        print(f"Embedding failed for cache check: {e}")
-        query_embedding = None
-
-    state: RAGState = {
-        "chat_history": request.history,
-        "user_query": user_query,
-        "sub_queries": [],
-        "current_query": "",
-        "retrieved_chunks": [],
-        "attempts": 0,
-        "response": "",
-        "citations": [],
-        "rejected": False,
-        "enough": False,
-    }
-
     # --- IMPROVEMENT 2: UI/UX Streaming and Agent Visibility ---
     async def event_generator():
+        # Yield an initial status immediately so the frontend knows we are working
+        yield f"data: {json.dumps({'status': 'Analyzing query (loading models)...'})}\n\n"
+
+        # --- IMPROVEMENT 5: Semantic Caching (Performance Optimization) ---
+        query_embedding = None
+        try:
+            embedder = OllamaEmbedder()
+            query_embedding = embedder.embed(user_query)
+            
+            # Check cache for similar query
+            for cached in _semantic_cache:
+                if cosine_similarity(query_embedding, cached["embedding"]) > 0.95:
+                    yield f"data: {json.dumps({'status': 'completed', 'response': cached['response'], 'citations': cached['citations']})}\n\n"
+                    return
+        except Exception as e:
+            print(f"Embedding failed for cache check: {e}")
+
+        state: RAGState = {
+            "chat_history": request.history,
+            "user_query": user_query,
+            "sub_queries": [],
+            "current_query": "",
+            "retrieved_chunks": [],
+            "attempts": 0,
+            "response": "",
+            "citations": [],
+            "rejected": False,
+            "enough": False,
+        }
+
         async for event in graph.astream_events(state, version="v1"):
             event_type = event.get("event")
             
