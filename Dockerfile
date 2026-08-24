@@ -1,5 +1,5 @@
 # RAG Pipeline - Optimized Multi-stage build
-FROM python:3.11-slim as builder
+FROM python:3.11-slim AS builder
 
 WORKDIR /app
 
@@ -15,20 +15,9 @@ ENV PATH="/opt/venv/bin:$PATH"
 # Install pip packages incrementally to leverage Docker cache
 COPY requirements.txt .
 
-# Split installation into smaller groups for better caching
-RUN pip install --no-cache-dir --upgrade pip setuptools wheel
-
-# Install dependencies in order of change frequency (least to most)
-RUN pip install --no-cache-dir requests chromadb ollama || true
-
-RUN pip install --no-cache-dir langgraph litellm langchain-core langchain-community langchain-ollama || true
-
-RUN pip install --no-cache-dir fastapi uvicorn pydantic pydantic-settings python-dotenv || true
-
-RUN pip install --no-cache-dir pymupdf tqdm tiktoken sentence-transformers || true
-
-# Install remaining dependencies
-RUN pip install --no-cache-dir -r requirements.txt || true
+# Upgrade pip and install all dependencies at once for better efficiency
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    pip install --no-cache-dir -r requirements.txt
 
 # Production stage
 FROM python:3.11-slim

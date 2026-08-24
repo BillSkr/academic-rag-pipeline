@@ -48,6 +48,7 @@ User Query
 | Vector Database | ChromaDB (persistent, on-disk) |
 | Re-ranking | sentence-transformers cross-encoder |
 | Backend | FastAPI + uvicorn, Python 3.11 |
+| Frontend | React, Vite, Vanilla CSS (Glassmorphism UI) |
 | Containerisation | Docker, Docker Compose |
 | CI/CD | GitHub Actions (lint + test + Docker build) |
 | Evaluation | RAGAS (context precision, recall, faithfulness, answer relevancy) |
@@ -92,7 +93,19 @@ python -m src.main --build-store
 uvicorn src.api:app --host 0.0.0.0 --port 8000
 ```
 
-Open `http://localhost:8000` in your browser.
+Open `http://localhost:8000/docs` in your browser for the API documentation.
+
+### Starting the React Frontend
+
+To use the modern chat UI, start the frontend development server:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Open `http://localhost:5173` in your browser. Make sure the backend (Docker or local `uvicorn`) is running.
 
 ## 📁 Project Structure
 
@@ -100,6 +113,7 @@ Open `http://localhost:8000` in your browser.
 .
 ├── .github/workflows/ci.yml  # GitHub Actions: lint → test → Docker build
 ├── data/                     # corpus.json (PubMed papers) and raw PDFs
+├── frontend/                 # React + Vite frontend application
 ├── scripts/
 │   └── evaluate_ragas.py     # Offline RAGAS evaluation script
 ├── src/
