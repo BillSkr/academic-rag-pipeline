@@ -46,7 +46,13 @@ The first startup downloads models (~30 minutes):
 - **nomic-embed-text** (384-dim embeddings)
 - **cross-encoder** (for re-ranking)
 
-### 3. Access the Application
+### 3. Build the Vector Store
+Before querying, index the academic papers into the database:
+```bash
+docker exec rag-app python -m src.main --build-store
+```
+
+### 4. Access the Application
 - **Frontend**: http://localhost:4173
 - **API**: http://localhost:8001
 - **Ollama**: http://localhost:11435
@@ -260,8 +266,8 @@ python -m uvicorn src.api:app --reload  # In another
 ## 🚨 Troubleshooting
 
 ### API Returns "No Results Found"
-- **Cause**: Query doesn't match any documents OR similarity threshold too high
-- **Fix**: Lower `SIMILARITY_THRESHOLD` in `src/config/settings.py` from 0.5 to 0.3
+- **Cause**: Query doesn't match any documents OR similarity threshold too strict
+- **Fix**: Increase `SIMILARITY_THRESHOLD` in `src/config/settings.py` (e.g., to 0.8)
 - **Test**: `curl http://localhost:8001/query -X POST -H "Content-Type: application/json" -d '{"question":"SOD1 protein"}'`
 
 ### Frontend Shows Loading Spinner Forever

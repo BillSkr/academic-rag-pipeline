@@ -26,7 +26,7 @@ class EnvSettings(BaseSettings):
 
     # ── Retrieval ─────────────────────────────────────────────────────────────
     TOP_K: int = 5                      # number of chunks to retrieve per query
-    SIMILARITY_THRESHOLD: float = 0.5   # max cosine distance to accept a chunk (lowered from 0.7)
+    SIMILARITY_THRESHOLD: float = 0.8   # max cosine distance to accept a chunk
     MAX_RETRIEVAL_ATTEMPTS: int = 3     # retry limit before giving up
 
     # ── LLM (used by LLMFactory via LiteLLM) ─────────────────────────────────

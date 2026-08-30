@@ -18,13 +18,20 @@ All services should show "Up":
 - `rag-app` (API server)
 - `rag-frontend` (Web UI)
 
-### Step 2: Test it Works
+### Step 2: Build the Vector Store
+Before querying, you must index the academic papers into the database:
+```bash
+docker exec rag-app python -m src.main --build-store
+```
+Wait for the "Vector store built successfully" message.
+
+### Step 3: Test it Works
 ```bash
 # Quick health check (should return {"status":"ok"})
 curl http://localhost:8001/health
 ```
 
-### Step 3: Try Queries
+### Step 4: Try Queries
 
 **Option A: Web Interface (Easiest)**
 Open browser: http://localhost:4173
