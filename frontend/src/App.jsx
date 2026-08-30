@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import ChatBox from './components/ChatBox';
 import ChatInput from './components/ChatInput';
-import { Bot } from 'lucide-react';
 import './index.css';
 
 function App() {
@@ -50,7 +49,7 @@ function App() {
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder('utf-8');
-      
+
       let aiText = '';
       let buffer = '';
 
@@ -59,22 +58,22 @@ function App() {
         if (done) break;
 
         buffer += decoder.decode(value, { stream: true });
-        
+
         // SSE messages are separated by double newlines
         let boundary = buffer.indexOf('\n\n');
-        
+
         while (boundary !== -1) {
           const chunk = buffer.slice(0, boundary);
           buffer = buffer.slice(boundary + 2);
           boundary = buffer.indexOf('\n\n');
-          
+
           if (chunk.startsWith('data: ')) {
             const dataStr = chunk.substring(6);
             if (!dataStr) continue;
-            
+
             try {
               const data = JSON.parse(dataStr);
-              
+
               setMessages((prev) => prev.map(msg => {
                 if (msg.id !== aiMessageId) return msg;
 
@@ -84,7 +83,7 @@ function App() {
                   aiText += data.token;
                   newMsg.text = aiText;
                 }
-                
+
                 if (data.status) {
                   if (data.status === 'completed') {
                     newMsg.isStreaming = false;
@@ -100,10 +99,10 @@ function App() {
                     newMsg.statusUpdates = [data.status];
                   }
                 }
-                
+
                 return newMsg;
               }));
-              
+
             } catch (e) {
               console.error('Error parsing SSE data:', e, dataStr);
             }
@@ -129,7 +128,7 @@ function App() {
         <h1>Academic RAG Pipeline</h1>
         <p>Your intelligent research assistant powered by local LLMs</p>
       </header>
-      
+
       <main className="chat-container">
         <ChatBox messages={messages} />
         <ChatInput onSendMessage={handleSendMessage} disabled={isProcessing} />

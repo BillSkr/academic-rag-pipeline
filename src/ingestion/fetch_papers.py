@@ -1,4 +1,4 @@
-"""
+﻿"""
 fetch_papers.py
 
 Offline data collection script for the Agentic RAG Academic Assistant.
@@ -7,10 +7,10 @@ Queries the PubMed / NCBI E-utilities API to retrieve biomedical
 research papers about Amyotrophic Lateral Sclerosis (ALS).
 
 Workflow:
-    1. ESearch  – query PubMed and obtain a list of PMIDs.
-    2. EFetch   – retrieve full XML records for those PMIDs.
-    3. Parse    – extract Title, Abstract, Authors, and Year from the XML.
-    4. Persist  – write the structured results to ``data/corpus.json``.
+    1. ESearch  â€“ query PubMed and obtain a list of PMIDs.
+    2. EFetch   â€“ retrieve full XML records for those PMIDs.
+    3. Parse    â€“ extract Title, Abstract, Authors, and Year from the XML.
+    4. Persist  â€“ write the structured results to ``data/corpus.json``.
 """
 
 import json

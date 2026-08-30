@@ -11,7 +11,9 @@ Usage:
     answer = model.generate(system_prompt="...", user_prompt="...")
 """
 
-from litellm import completion
+import os
+
+import litellm
 
 from src.config import settings
 
@@ -47,18 +49,18 @@ class LLMFactory:
         Returns:
             The model's text response as a plain string.
         """
-        import os
-        
         # Read model config from settings; fall back gracefully to Ollama defaults
         model = getattr(settings, "MODEL_NAME", "ollama/mistral:latest")
         temperature = getattr(settings, "TEMPERATURE", 0.0)
         max_tokens = getattr(settings, "MAX_TOKENS", 2048)
-        
+
         # LiteLLM reads OLLAMA_API_BASE for ollama/ models
-        ollama_url = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
+        # Inside Docker: use service name 'ollama-service'
+        # Outside Docker: use 'localhost'
+        ollama_url = os.environ.get("OLLAMA_BASE_URL", "http://ollama-service:11434")
         os.environ["OLLAMA_API_BASE"] = ollama_url
 
-        response = completion(
+        response = litellm.completion(
             model=model,
             messages=[
                 {"role": "system", "content": system_prompt},

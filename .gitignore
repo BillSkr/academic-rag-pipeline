@@ -3,6 +3,8 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.so
+*.egg-info/
+build/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
@@ -18,10 +20,15 @@ ENV/
 # .env is gitignored; commit .env.example instead
 *.env
 
+# ── Node / Frontend ──────────────────────────────────────────────────────────
+node_modules/
+dist/
+
 # ── Data files ────────────────────────────────────────────────────────────────
 # Exclude the PubMed corpus (can be re-fetched with fetch_papers.py)
 data/corpus.json
-# Keep the data/ directory itself tracked (for any README or placeholder)
+# Exclude downloaded PDFs (can be re-fetched)
+data/academic_papers/*.pdf
 
 # ── ChromaDB on-disk collection ────────────────────────────────────────────────
 # The vector store is rebuilt via `python -m src.main --build-store`
@@ -30,11 +37,15 @@ src/vectordb/chroma_collection/
 # ── Evaluation output ─────────────────────────────────────────────────────────
 ragas_results.json
 
-# ── IDEs ──────────────────────────────────────────────────────────────────────
+# ── Logs ──────────────────────────────────────────────────────────────────────
+*.log
+
+# ── IDEs & Editors ────────────────────────────────────────────────────────────
 .idea/
 .vscode/
 *.swp
 *.swo
+.agents/
 
 # ── OS generated ──────────────────────────────────────────────────────────────
 .DS_Store

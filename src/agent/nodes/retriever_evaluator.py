@@ -50,9 +50,11 @@ def retrieve_and_evaluate(state: "RAGState") -> "RAGState":
             logger.error("Retrieval failed for query '%s': %s", q, exc)
 
     chunks = list(all_chunks_dict.values())
+    logger.info(f"Retrieved {len(chunks)} chunks from vector store")
 
     # If nothing was retrieved, signal that retrieval failed
     if not chunks:
+        logger.warning("No chunks retrieved - setting enough=False to trigger retry")
         state["retrieved_chunks"] = []
         state["enough"] = False
         return state

@@ -57,7 +57,6 @@ def build_vector_store() -> None:
     texts = [chunk["text"] for chunk in all_chunks]
 
     logger.info("Embedding %d chunks in parallel...", len(texts))
-    print(f"Embedding {len(texts)} chunks in parallel...")
     try:
         embeddings = embedder.embed_batch(texts)
     except Exception as exc:
@@ -68,6 +67,5 @@ def build_vector_store() -> None:
         store = ChromaVectorStore()
         store.upsert_documents(ids, embeddings, metadatas, texts)
         logger.info("Successfully indexed %d chunks into ChromaDB.", len(ids))
-        print(f"Successfully indexed {len(ids)} chunks into ChromaDB.")
     except Exception as exc:
         raise RuntimeError(f"Failed to persist embeddings to ChromaDB: {exc}") from exc

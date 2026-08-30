@@ -1,5 +1,5 @@
 """
-Node 1 – Query Analyzer.
+Node 1 â€“ Query Analyzer.
 
 Responsibilities:
 * Detect whether the incoming query is within the academic domain.
@@ -22,7 +22,6 @@ def analyze_query(state: "RAGState") -> "RAGState":
 
     user_query = state["user_query"]
     llm = LLMFactory()
-    
 
     system_prompt = """You are an academic query classifier. Decide if the following user query is related to academic research.
     Respond with only 'YES' or 'NO'."""

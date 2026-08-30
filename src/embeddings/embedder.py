@@ -87,10 +87,14 @@ class OllamaEmbedder:
                 time.sleep(1)
                 continue
 
-            if "embedding" not in model_response:
-                raise KeyError("Embedding response missing 'embedding' key.")
+            # Support both old dict-style (ollama<0.1.7) and new object-style responses
+            if hasattr(model_response, "embedding"):
+                embedding_vector = model_response.embedding
+            elif isinstance(model_response, dict) and "embedding" in model_response:
+                embedding_vector = model_response["embedding"]
+            else:
+                raise KeyError("Embedding response missing 'embedding' field.")
 
-            embedding_vector = model_response["embedding"]
             logger.debug("Successfully generated embedding (dim=%d)", len(embedding_vector))
             return embedding_vector
 

@@ -17,4 +17,3 @@ from unittest.mock import MagicMock
 # ── Stub litellm before any src.* imports ────────────────────────────────────
 # Every node that calls `from litellm import completion` will receive this mock.
 sys.modules['litellm'] = MagicMock()
-sys.modules['litellm.completion'] = MagicMock()

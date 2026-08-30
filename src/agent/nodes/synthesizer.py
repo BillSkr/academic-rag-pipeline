@@ -1,5 +1,5 @@
-"""
-Node 3 – Synthesizer.
+﻿"""
+Node 3 â€“ Synthesizer.
 
 * Receives validated chunks from the Retriever node.
 * Generates a natural-language answer that includes inline citations.

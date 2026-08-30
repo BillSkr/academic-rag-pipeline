@@ -57,7 +57,10 @@ def mock_chroma_store():
 
     The store's internal .collection is replaced with the mock so no real
     ChromaDB client or persistence layer is involved.
+    The singleton is reset before each test to prevent state bleed.
     """
+    # Reset singleton so each test gets a fresh instance
+    ChromaVectorStore._instance = None
     store = ChromaVectorStore()
     mock_collection = MockCollection()
     store.collection = mock_collection

@@ -26,13 +26,13 @@ class EnvSettings(BaseSettings):
 
     # ── Retrieval ─────────────────────────────────────────────────────────────
     TOP_K: int = 5                      # number of chunks to retrieve per query
-    SIMILARITY_THRESHOLD: float = 0.7  # max cosine distance to accept a chunk
+    SIMILARITY_THRESHOLD: float = 0.5   # max cosine distance to accept a chunk (lowered from 0.7)
     MAX_RETRIEVAL_ATTEMPTS: int = 3     # retry limit before giving up
 
     # ── LLM (used by LLMFactory via LiteLLM) ─────────────────────────────────
     MODEL_NAME: str = "ollama/mistral:latest"  # LiteLLM model string
     TEMPERATURE: float = 0.0
-    MAX_TOKENS: int = 2048
+    MAX_TOKENS: int = 512  # reduced from 2048 for faster responses
 
     # ── Embedder (Ollama-specific) ────────────────────────────────────────────
     OLLAMA_MODEL_NAME: str = "mistral:latest"

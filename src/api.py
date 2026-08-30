@@ -8,27 +8,35 @@ Exposes two endpoints:
 import asyncio
 import json
 import math
+import logging
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from src.agent.graph import create_rag_graph
 from src.agent.state import RAGState
 from src.embeddings.embedder import OllamaEmbedder
 from src.rag.pipeline import build_vector_store
 
-# Simple In-Memory Semantic Cache
-_semantic_cache = []
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-def cosine_similarity(v1, v2):
+# Simple In-Memory Semantic Cache (capped to avoid unbounded memory growth)
+_semantic_cache: list = []
+_MAX_CACHE_SIZE = 100
+
+
+def cosine_similarity(v1: list[float], v2: list[float]) -> float:
     dot_product = sum(a * b for a, b in zip(v1, v2))
     mag1 = math.sqrt(sum(a * a for a in v1))
     mag2 = math.sqrt(sum(a * a for a in v2))
     if mag1 == 0 or mag2 == 0:
         return 0.0
     return dot_product / (mag1 * mag2)
+
 
 app = FastAPI(title="Academic RAG Assistant")
 
@@ -44,37 +52,23 @@ app.add_middleware(
 graph = create_rag_graph()
 
 
-def _extract_final_state(graph_output: dict) -> dict:
-    """Return the RAG state from either flat or node-wrapped LangGraph output."""
-    if not isinstance(graph_output, dict):
-        return {}
-    if "response" in graph_output:
-        return graph_output
-    for value in graph_output.values():
-        if isinstance(value, dict) and "response" in value:
-            return value
-    return {}
-
-
 class QueryRequest(BaseModel):
     question: str
-    history: list = []
+    history: list = Field(default_factory=list)
 
 
 @app.post("/query")
 async def query(request: QueryRequest):
-    """Run the RAG pipeline on a user question."""
+    """Run the RAG pipeline on a user question, streaming results via SSE."""
     if not request.question or not request.question.strip():
         raise HTTPException(status_code=400, detail="Question cannot be empty.")
         
     user_query = request.question.strip()
 
-    # --- IMPROVEMENT 2: UI/UX Streaming and Agent Visibility ---
     async def event_generator():
         # Yield an initial status immediately so the frontend knows we are working
         yield f"data: {json.dumps({'status': 'Analyzing query (loading models)...'})}\n\n"
 
-        # --- IMPROVEMENT 5: Semantic Caching (Performance Optimization) ---
         query_embedding = None
         try:
             embedder = OllamaEmbedder()
@@ -84,10 +78,11 @@ async def query(request: QueryRequest):
             # Check cache for similar query
             for cached in _semantic_cache:
                 if cosine_similarity(query_embedding, cached["embedding"]) > 0.95:
+                    logger.info("Cache hit for similar query")
                     yield f"data: {json.dumps({'status': 'completed', 'response': cached['response'], 'citations': cached['citations']})}\n\n"
                     return
         except Exception as e:
-            print(f"Embedding failed for cache check: {e}")
+            logger.error(f"Embedding failed for cache check: {e}")
 
         state: RAGState = {
             "chat_history": request.history,
@@ -103,33 +98,36 @@ async def query(request: QueryRequest):
         }
 
         try:
-            async for event in graph.astream_events(state, version="v1"):
-                event_type = event.get("event")
-                
-                # Stream status updates for node transitions
-                if event_type == "on_chain_start" and event.get("name") != "LangGraph":
-                    node_name = event.get("name")
-                    yield f"data: {json.dumps({'status': f'Running {node_name}...'})}\n\n"
-                    
-                # Stream LLM tokens from the synthesizer
-                elif event_type == "on_chat_model_stream":
-                    chunk = event["data"]["chunk"]
-                    if hasattr(chunk, 'content') and chunk.content:
-                        yield f"data: {json.dumps({'token': chunk.content})}\n\n"
-                        
-                # Complete and cache
-                elif event_type == "on_chain_end" and event.get("name") == "LangGraph":
-                    final_state = _extract_final_state(event["data"]["output"])
-                    # Save to cache
-                    if not final_state.get("rejected") and query_embedding:
-                        _semantic_cache.append({
-                            "embedding": query_embedding,
-                            "response": final_state.get("response", ""),
-                            "citations": final_state.get("citations", [])
-                        })
-                    yield f"data: {json.dumps({'status': 'completed', 'response': final_state.get('response', ''), 'citations': final_state.get('citations', [])})}\n\n"
+            # Run graph synchronously in a thread with a timeout
+            logger.info(f"Starting graph execution for query: {user_query}")
+            final_state = await asyncio.wait_for(
+                asyncio.to_thread(graph.invoke, state),
+                timeout=180  # 3 minute timeout
+            )
+            logger.info(f"Graph execution completed")
+            
+            response_text = final_state.get("response", "")
+            citations = final_state.get("citations", [])
+            
+            logger.info(f"Response length: {len(response_text)}, Citations: {len(citations)}")
+            
+            # Save to cache if we got a valid response (evict oldest if at cap)
+            if not final_state.get("rejected") and query_embedding and response_text:
+                if len(_semantic_cache) >= _MAX_CACHE_SIZE:
+                    _semantic_cache.pop(0)
+                _semantic_cache.append({
+                    "embedding": query_embedding,
+                    "response": response_text,
+                    "citations": citations
+                })
+            
+            # Yield the completed status with response and citations
+            yield f"data: {json.dumps({'status': 'completed', 'response': response_text, 'citations': citations})}\n\n"
+        except asyncio.TimeoutError:
+            logger.error("Graph execution timed out")
+            yield f"data: {json.dumps({'status': 'completed', 'response': 'Request timed out. Please try again.', 'citations': []})}\n\n"
         except Exception as e:
-            print(f"Graph execution error: {e}")
+            logger.error(f"Graph execution error: {e}", exc_info=True)
             yield f"data: {json.dumps({'status': 'completed', 'response': f'Error: {str(e)}', 'citations': []})}\n\n"
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")

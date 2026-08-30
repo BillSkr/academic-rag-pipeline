@@ -1,4 +1,4 @@
-"""Chunking logic."""
+﻿"""Chunking logic."""
 
 
 from src.config import settings
