@@ -67,7 +67,7 @@ async def query(request: QueryRequest):
 
     async def event_generator():
         # Yield an initial status immediately so the frontend knows we are working
-        yield f"data: {json.dumps({'status': 'Analyzing query (loading models)...'})}\n\n"
+        yield f"data: {json.dumps({'status': 'Analyzing query...'})}\n\n"
 
         query_embedding = None
         try:
