@@ -57,10 +57,7 @@ for line in r.iter_lines():
         break
 ```
 
-**Option C: Shell Script**
-```bash
-bash scripts/test_query.sh "What causes Alzheimer's?"
-```
+
 
 ---
 

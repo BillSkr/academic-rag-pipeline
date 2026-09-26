@@ -122,7 +122,7 @@ Submit a question to the RAG pipeline.
 
 **Response (SSE Stream):**
 ```
-data: {"status":"Analyzing query (loading models)..."}
+data: {"status":"Analyzing query..."}
 data: {"status":"Running analyzer..."}
 data: {"status":"Running retriever..."}
 data: {"status":"completed","response":"...","citations":[...]}
