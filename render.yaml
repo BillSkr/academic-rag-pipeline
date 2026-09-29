@@ -1,0 +1,28 @@
+services:
+  # The backend API (FastAPI)
+  - type: web
+    name: rag-backend
+    env: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: "8000"
+      - key: GROQ_API_KEY
+        sync: false  # You will be prompted to enter this securely in the Render dashboard during deployment
+      
+  # The frontend UI (React/Vite)
+  - type: web
+    name: rag-frontend
+    env: static
+    plan: free
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    envVars:
+      # This points the frontend to the backend we are deploying.
+      # Render assigns random suffixes to names if the name is taken.
+      # If your backend URL ends up being different, you will need to update this env variable in the Render dashboard!
+      - key: VITE_API_BASE_URL
+        value: "https://rag-backend.onrender.com"
