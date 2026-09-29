@@ -15,13 +15,24 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Trigger Render deploy hook
+      - name: Trigger Render Backend deploy hook
         env:
-          DEPLOY_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+          BACKEND_URL: ${{ secrets.RENDER_BACKEND_HOOK_URL }}
         run: |
-          if [ -z "$DEPLOY_URL" ]; then
-            echo "⚠️  RENDER_DEPLOY_HOOK_URL secret is not set – skipping deploy hook."
-            exit 0
+          if [ -z "$BACKEND_URL" ]; then
+            echo "⚠️  RENDER_BACKEND_HOOK_URL secret is not set – skipping backend deploy hook."
+          else
+            curl -fsSL -X POST "$BACKEND_URL"
+            echo "✅ Backend Render deploy hook triggered."
           fi
-          curl -fsSL -X POST "$DEPLOY_URL"
-          echo "✅ Render deploy hook triggered."
+
+      - name: Trigger Render Frontend deploy hook
+        env:
+          FRONTEND_URL: ${{ secrets.RENDER_FRONTEND_HOOK_URL }}
+        run: |
+          if [ -z "$FRONTEND_URL" ]; then
+            echo "⚠️  RENDER_FRONTEND_HOOK_URL secret is not set – skipping frontend deploy hook."
+          else
+            curl -fsSL -X POST "$FRONTEND_URL"
+            echo "✅ Frontend Render deploy hook triggered."
+          fi
