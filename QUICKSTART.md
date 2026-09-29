@@ -14,7 +14,7 @@ docker compose ps
 ```
 
 All services should show "Up":
-- `ollama-service` (LLM)
+
 - `rag-app` (API server)
 - `rag-frontend` (Web UI)
 
@@ -83,17 +83,17 @@ for line in r.iter_lines():
 4. Docker Compose setup
 
 ### README Talking Points
-- "Built a complete RAG system with local LLMs"
+- "Built a complete RAG system with Groq Llama 3"
 - "Implemented agentic query reformulation"
 - "Integrated ChromaDB for semantic search"
 - "Designed real-time SSE streaming"
 - "Deployed with Docker Compose"
 
 ### Live Demo
-Can run on a cheap server ($5-10/month):
-- AWS EC2 t3.medium
-- DigitalOcean Droplet
-- Linode 4GB
+Can run on free tiers (like Render Web Services) or cheap servers:
+- Render Free Tier
+- AWS EC2 t3.micro
+- DigitalOcean Basic Droplet
 
 ---
 
@@ -115,9 +115,8 @@ print(f'Documents in store: {store.collection.count()}')
 "
 ```
 
-### "Very slow first query"
-Normal! Ollama needs to load models (~60-90 seconds).
-Subsequent queries are cached and faster.
+### "First query taking a few seconds?"
+Normal! The local embedding model (`all-MiniLM-L6-v2`) is loaded into memory on the first request. Subsequent queries are cached and virtually instant.
 
 ---
 

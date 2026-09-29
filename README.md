@@ -1,6 +1,6 @@
 # Academic RAG Pipeline - Portfolio Project
 
-A production-ready Retrieval-Augmented Generation (RAG) system for academic research papers, built with local LLMs (Ollama), LangGraph, and ChromaDB.
+A production-ready Retrieval-Augmented Generation (RAG) system for academic research papers, built with Groq (Llama 3), LangGraph, and ChromaDB.
 
 ## 🎯 Project Overview
 
@@ -12,7 +12,7 @@ This project demonstrates a complete AI pipeline that:
 - **Caches** results for performance optimization
 
 ### Key Features
-- ✅ Local LLM inference (no API keys required)
+- ✅ Lightning-fast cloud LLM inference via Groq API
 - ✅ Agentic query reformulation for better retrieval
 - ✅ Cross-encoder re-ranking for result quality
 - ✅ Server-Sent Events (SSE) streaming
@@ -27,8 +27,8 @@ This project demonstrates a complete AI pipeline that:
 
 ### Prerequisites
 - Docker & Docker Compose
-- 8GB RAM minimum (16GB recommended)
-- ~50GB disk space (for Ollama models)
+- Groq API Key (Set in `.env`)
+- ~1GB RAM minimum
 
 ### 1. Clone & Setup
 ```bash
@@ -41,9 +41,8 @@ cd RAG\ pipeline
 docker compose up -d --pull always
 ```
 
-The first startup downloads models (~30 minutes):
-- **Ollama Mistral** (7B LLM for inference)
-- **nomic-embed-text** (384-dim embeddings)
+The first startup may download the lightweight local embedding model (~100MB):
+- **all-MiniLM-L6-v2** (384-dim embeddings)
 - **cross-encoder** (for re-ranking)
 
 ### 3. Build the Vector Store
@@ -55,7 +54,7 @@ docker exec rag-app python -m src.main --build-store
 ### 4. Access the Application
 - **Frontend**: http://localhost:4173
 - **API**: http://localhost:8001
-- **Ollama**: http://localhost:11435
+
 
 ---
 
@@ -159,7 +158,7 @@ Health check endpoint.
 │         (Port 8000, Exposed on 8001)                │
 ├──────────────────────────────────────────────────────┤
 │  1. Semantic Caching Layer                          │
-│  2. Query Embedding (OllamaEmbedder)                │
+│  2. Query Embedding (LocalEmbedder)                 │
 │  3. LangGraph Agentic Pipeline                      │
 │     ├─ Query Analyzer (classify & decompose)       │
 │     ├─ Retriever & Evaluator (vector search)       │
@@ -171,8 +170,8 @@ Health check endpoint.
       ┌──────────┼──────────┐
       │          │          │
 ┌─────▼───┐  ┌──▼────┐  ┌──▼──────────────┐
-│ Ollama  │  │Chroma │  │cross-encoder/  │
-│ Mistral │  │ DB    │  │ms-marco        │
+│ Groq    │  │Chroma │  │cross-encoder/  │
+│ (Llama3)│  │ DB    │  │ms-marco        │
 │ (LLM)   │  │(Vec)  │  │(Re-ranker)     │
 └─────────┘  └───────┘  └─────────────────┘
 ```
@@ -183,11 +182,11 @@ Health check endpoint.
 
 | Metric | Value | Notes |
 |--------|-------|-------|
-| **First Query** | 90-120s | LLM cold start |
-| **Cached Query** | 2-5s | Semantic cache hit |
+| **First Query** | 5-10s | Model load (if needed) |
+| **Cached Query** | 1-2s | Semantic cache hit |
 | **Retrieval** | 1-2s | Vector search + re-ranking |
-| **LLM Inference** | 30-60s | Mistral 7B token generation |
-| **Memory Usage** | ~8GB | Container limits set |
+| **LLM Inference** | 2-5s | Groq API generation |
+| **Memory Usage** | ~1GB | Container limits set |
 
 ---
 
@@ -202,7 +201,7 @@ RAG pipeline/
 │   │   ├── graph.py           # Pipeline orchestration
 │   │   ├── state.py           # Shared state definition
 │   │   └── nodes/             # Individual processing nodes
-│   ├── embeddings/            # OllamaEmbedder
+│   ├── embeddings/            # LocalEmbedder
 │   ├── vectordb/              # ChromaDB wrapper
 │   ├── rag/                   # RAG pipeline logic
 │   └── config/                # Settings & configuration
@@ -229,7 +228,7 @@ python tests/benchmark.py --queries 10 --save-results
 ### Local Development (without Docker)
 ```bash
 pip install -r requirements.txt
-ollama serve  # In one terminal
+
 python -m uvicorn src.api:app --reload  # In another
 ```
 
@@ -239,8 +238,8 @@ python -m uvicorn src.api:app --reload  # In another
 
 | Component | Technology | Why |
 |-----------|-----------|-----|
-| **LLM** | Ollama + Mistral 7B | Open-source, local, no API costs |
-| **Embeddings** | nomic-embed-text | 384-dim, efficient, purpose-built |
+| **LLM** | Groq API + Llama 3 | Lightning fast, cloud-hosted, easy to deploy |
+| **Embeddings** | all-MiniLM-L6-v2 | 384-dim, lightweight, CPU-friendly |
 | **Vector DB** | ChromaDB | Simple, persistent, Python-native |
 | **Agentic Loop** | LangGraph | Clean state management, composable |
 | **Web Framework** | FastAPI | Async, SSE streaming, auto-docs |
@@ -271,22 +270,11 @@ python -m uvicorn src.api:app --reload  # In another
 - **Test**: `curl http://localhost:8001/query -X POST -H "Content-Type: application/json" -d '{"question":"SOD1 protein"}'`
 
 ### Frontend Shows Loading Spinner Forever
-- **Cause**: Request timeout (queries take 90-120s)
-- **Fix**: Increase browser timeout or wait longer
+- **Cause**: Request timeout
+- **Fix**: Check network connectivity to Groq API
 - **Check**: `curl -w "@curl-format.txt" http://localhost:8001/health`
 
-### Out of Memory
-- **Cause**: Models loaded exceed 8GB
-- **Fix**: Increase Docker memory in `docker-compose.yml`
-```yaml
-rag-app:
-  mem_limit: 16g  # Increase from 8g
-```
 
-### Models Not Downloading
-- **Cause**: First startup takes 30 minutes
-- **Status**: Check with `docker logs ollama-service`
-- **Wait**: Let it complete before querying
 
 ---
 
