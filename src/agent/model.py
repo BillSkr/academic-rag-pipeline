@@ -49,16 +49,13 @@ class LLMFactory:
         Returns:
             The model's text response as a plain string.
         """
-        # Read model config from settings; fall back gracefully to Ollama defaults
-        model = getattr(settings, "MODEL_NAME", "ollama/mistral:latest")
+        # Read model config from settings; fall back gracefully to Groq defaults
+        model = getattr(settings, "MODEL_NAME", "groq/llama3-8b-8192")
         temperature = getattr(settings, "TEMPERATURE", 0.0)
-        max_tokens = getattr(settings, "MAX_TOKENS", 2048)
+        max_tokens = getattr(settings, "MAX_TOKENS", 512)
 
-        # LiteLLM reads OLLAMA_API_BASE for ollama/ models
-        # Inside Docker: use service name 'ollama-service'
-        # Outside Docker: use 'localhost'
-        ollama_url = os.environ.get("OLLAMA_BASE_URL", "http://ollama-service:11434")
-        os.environ["OLLAMA_API_BASE"] = ollama_url
+        if hasattr(settings, "GROQ_API_KEY") and settings.GROQ_API_KEY:
+            os.environ["GROQ_API_KEY"] = settings.GROQ_API_KEY
 
         response = litellm.completion(
             model=model,
@@ -68,7 +65,7 @@ class LLMFactory:
             ],
             temperature=temperature,
             max_tokens=max_tokens,
-            timeout=600,  # 10 minute timeout for Ollama/Mistral on CPU
-            request_timeout=600,  # HTTP request timeout
+            timeout=60,  # 1 minute timeout for Groq
+            request_timeout=60,  # HTTP request timeout
         )
         return response.choices[0].message.content

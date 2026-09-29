@@ -30,15 +30,13 @@ class EnvSettings(BaseSettings):
     MAX_RETRIEVAL_ATTEMPTS: int = 3     # retry limit before giving up
 
     # ── LLM (used by LLMFactory via LiteLLM) ─────────────────────────────────
-    MODEL_NAME: str = "ollama/mistral:latest"  # LiteLLM model string
+    MODEL_NAME: str = "groq/llama3-8b-8192"  # LiteLLM model string for Groq
     TEMPERATURE: float = 0.0
     MAX_TOKENS: int = 512  # reduced from 2048 for faster responses
 
-    # ── Embedder (Ollama-specific) ────────────────────────────────────────────
-    OLLAMA_MODEL_NAME: str = "mistral:latest"
-    OLLAMA_EMBED_MODEL_NAME: str = "nomic-embed-text"
-    OLLAMA_TEMPERATURE: float = 0.0
-    OLLAMA_MAX_TOKENS: int = 2048
+    # ── Embedder ────────────────────────────────────────────
+    EMBED_MODEL_NAME: str = "all-MiniLM-L6-v2"
+    GROQ_API_KEY: str = ""
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -58,7 +56,5 @@ MAX_RETRIEVAL_ATTEMPTS = _env.MAX_RETRIEVAL_ATTEMPTS
 MODEL_NAME = _env.MODEL_NAME
 TEMPERATURE = _env.TEMPERATURE
 MAX_TOKENS = _env.MAX_TOKENS
-OLLAMA_MODEL_NAME = _env.OLLAMA_MODEL_NAME
-OLLAMA_EMBED_MODEL_NAME = _env.OLLAMA_EMBED_MODEL_NAME
-OLLAMA_TEMPERATURE = _env.OLLAMA_TEMPERATURE
-OLLAMA_MAX_TOKENS = _env.OLLAMA_MAX_TOKENS
+EMBED_MODEL_NAME = _env.EMBED_MODEL_NAME
+GROQ_API_KEY = _env.GROQ_API_KEY

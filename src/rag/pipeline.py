@@ -12,7 +12,7 @@ Run once before starting the API server, or again whenever new papers are added.
 
 import logging
 
-from src.embeddings.embedder import OllamaEmbedder
+from src.embeddings.embedder import LocalEmbedder
 from src.ingestion import loader
 from src.splitting import splitter
 from src.vectordb.chroma_store import ChromaVectorStore
@@ -51,7 +51,7 @@ def build_vector_store() -> None:
         return
 
     # ── 3. Embed chunks in parallel ───────────────────────────────────────────
-    embedder = OllamaEmbedder()
+    embedder = LocalEmbedder()
     ids = [chunk["chunk_id"] for chunk in all_chunks]
     metadatas = [chunk["metadata"] for chunk in all_chunks]
     texts = [chunk["text"] for chunk in all_chunks]

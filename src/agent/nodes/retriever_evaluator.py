@@ -15,7 +15,7 @@ from sentence_transformers import CrossEncoder
 
 from src.agent.state import RAGState
 from src.config import settings
-from src.embeddings.embedder import OllamaEmbedder
+from src.embeddings.embedder import LocalEmbedder
 from src.vectordb.chroma_store import ChromaVectorStore
 
 logger = logging.getLogger(__name__)
@@ -38,7 +38,7 @@ def retrieve_and_evaluate(state: "RAGState") -> "RAGState":
 
     logger.info("Retrieving chunks for query: %s", state["current_query"])
 
-    embedder = OllamaEmbedder()
+    embedder = LocalEmbedder()
     store = ChromaVectorStore()
 
     # Run retrieval for the primary query and all decomposed sub-queries

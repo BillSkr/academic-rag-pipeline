@@ -17,7 +17,7 @@ from pydantic import BaseModel, Field
 
 from src.agent.graph import create_rag_graph
 from src.agent.state import RAGState
-from src.embeddings.embedder import OllamaEmbedder
+from src.embeddings.embedder import LocalEmbedder
 from src.rag.pipeline import build_vector_store
 
 # Configure logging
@@ -71,7 +71,7 @@ async def query(request: QueryRequest):
 
         query_embedding = None
         try:
-            embedder = OllamaEmbedder()
+            embedder = LocalEmbedder()
             # Run the blocking embed call in a thread so it doesn't freeze the event loop
             query_embedding = await asyncio.to_thread(embedder.embed, user_query)
             

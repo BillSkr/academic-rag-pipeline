@@ -1,29 +1,27 @@
 """
 Embedding utilities for the Academic RAG Assistant.
 
-Provides OllamaEmbedder — a singleton wrapper around the Ollama embedding
-model. Supports single-text embedding and parallel batch embedding.
+Provides LocalEmbedder — a singleton wrapper around sentence-transformers.
+Supports single-text embedding and parallel batch embedding.
 
-Configured via settings.OLLAMA_EMBED_MODEL_NAME (default: nomic-embed-text).
+Configured via settings.EMBED_MODEL_NAME (default: all-MiniLM-L6-v2).
 """
 
 import logging
-import os
-import time
 from concurrent.futures import ThreadPoolExecutor
 
-from ollama import Client as OllamaClient
+from sentence_transformers import SentenceTransformer
 
 from src.config import settings
 
 logger = logging.getLogger(__name__)
 
 
-class OllamaEmbedder:
-    """Singleton wrapper around the Ollama embedding endpoint.
+class LocalEmbedder:
+    """Singleton wrapper around a local sentence-transformers model.
 
-    Implemented as a singleton to reuse the same HTTP client connection
-    across all nodes that call it during a single graph execution.
+    Implemented as a singleton to avoid reloading the model into memory
+    multiple times across different modules.
     """
 
     _instance = None
@@ -34,82 +32,44 @@ class OllamaEmbedder:
             cls._instance = super().__new__(cls)
         return cls._instance
 
-    def __init__(self, host: str = None, timeout: int = 120) -> None:
-        # Guard: skip re-initialisation on subsequent OllamaEmbedder() calls
+    def __init__(self) -> None:
+        # Guard: skip re-initialisation on subsequent LocalEmbedder() calls
         if getattr(self, "_initialised", False):
             return
         self._initialised = True
 
-        # Allow overriding via constructor or OLLAMA_BASE_URL env var
-        if host is None:
-            host = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
-
-        self.client = OllamaClient(host=host, timeout=timeout)
-        logger.info(
-            "Initialised OllamaEmbedder with model=%s host=%s",
-            settings.OLLAMA_EMBED_MODEL_NAME,
-            host,
-        )
+        model_name = getattr(settings, "EMBED_MODEL_NAME", "all-MiniLM-L6-v2")
+        logger.info(f"Loading local embedding model: {model_name}")
+        # Load the model explicitly on CPU to ensure it works anywhere
+        self.model = SentenceTransformer(model_name, device='cpu')
+        logger.info("Local embedding model loaded successfully.")
 
     def embed(self, text: str, max_retries: int = 3) -> list[float]:
         """Convert a string of text into a dense vector.
 
-        Retries up to `max_retries` times on transient network errors.
-
         Args:
             text:        The text to embed. Must be non-empty.
-            max_retries: Number of retry attempts before raising.
+            max_retries: Ignored for local embeddings, kept for API compatibility.
 
         Returns:
             A list of floats representing the embedding vector.
-
-        Raises:
-            ValueError:   If the input text is empty.
-            RuntimeError: If Ollama fails to respond after all retries.
-            KeyError:     If the response is missing the 'embedding' key.
         """
         if not text or not text.strip():
             raise ValueError("Input text must be a non-empty string.")
 
-        for attempt in range(1, max_retries + 1):
-            try:
-                logger.debug("Embedding attempt %d/%d", attempt, max_retries)
-                model_response = self.client.embeddings(
-                    model=settings.OLLAMA_EMBED_MODEL_NAME,
-                    prompt=text,
-                )
-            except Exception as exc:
-                logger.warning("Embedding attempt %d failed: %s", attempt, exc)
-                if attempt == max_retries:
-                    raise RuntimeError(
-                        f"Failed to get embedding from Ollama after {max_retries} attempts: {exc}"
-                    ) from exc
-                time.sleep(1)
-                continue
-
-            # Support both old dict-style (ollama<0.1.7) and new object-style responses
-            if hasattr(model_response, "embedding"):
-                embedding_vector = model_response.embedding
-            elif isinstance(model_response, dict) and "embedding" in model_response:
-                embedding_vector = model_response["embedding"]
-            else:
-                raise KeyError("Embedding response missing 'embedding' field.")
-
-            logger.debug("Successfully generated embedding (dim=%d)", len(embedding_vector))
-            return embedding_vector
+        embedding_vector = self.model.encode(text, show_progress_bar=False)
+        return embedding_vector.tolist()
 
     def embed_batch(self, texts: list[str], max_retries: int = 3) -> list[list[float]]:
-        """Embed a list of texts concurrently using a thread pool.
+        """Embed a list of texts.
 
         Args:
             texts:       List of non-empty strings to embed.
-            max_retries: Retry limit forwarded to each embed() call.
+            max_retries: Ignored.
 
         Returns:
             A list of embedding vectors in the same order as `texts`.
         """
-        with ThreadPoolExecutor(max_workers=10) as executor:
-            results = executor.map(
-                lambda text: self.embed(text, max_retries=max_retries), texts
-            )
-            return list(results)
+        embeddings = self.model.encode(texts, show_progress_bar=False)
+        return [emb.tolist() for emb in embeddings]
+
