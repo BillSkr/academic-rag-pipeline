@@ -102,7 +102,7 @@ async def query(request: QueryRequest):
             logger.info(f"Starting graph execution for query: {user_query}")
             final_state = await asyncio.wait_for(
                 asyncio.to_thread(graph.invoke, state),
-                timeout=180  # 3 minute timeout
+                timeout=600  # 10 minute timeout
             )
             logger.info(f"Graph execution completed")
             

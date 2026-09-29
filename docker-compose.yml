@@ -1,22 +1,6 @@
 services:
-  ollama:
-    image: ollama/ollama:latest
-    container_name: ollama-service
-    ports:
-      - "11435:11434"
-    volumes:
-      - ollama_data:/root/.ollama
-    environment:
-      - OLLAMA_HOST=0.0.0.0:11434
-    healthcheck:
-      test: ["CMD", "ollama", "list"]
-      interval: 15s
-      timeout: 10s
-      retries: 10
-      start_period: 30s
-    networks:
-      - rag-network
-    restart: unless-stopped
+  # Ollama runs on Windows natively (not in Docker) - see native Ollama setup
+  # Configure RAG app to connect to host Ollama via host.docker.internal:11434
 
   rag-app:
     build:
@@ -27,16 +11,21 @@ services:
       - "8001:8000"
     environment:
       - PYTHONUNBUFFERED=1
-      - OLLAMA_BASE_URL=http://ollama-service:11434
-      - OLLAMA_API_BASE=http://ollama-service:11434
-    command: ["uvicorn", "src.api:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+      - OLLAMA_API_BASE=http://host.docker.internal:11434
+    command: ["uvicorn", "src.api:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--timeout-keep-alive", "120", "--timeout-graceful-shutdown", "60"]
     volumes:
       - ./src:/app/src
       - ./data:/app/data
       - ./src/vectordb:/app/src/vectordb
-    depends_on:
-      ollama:
-        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
     networks:
       - rag-network
     healthcheck:
@@ -63,9 +52,6 @@ services:
     networks:
       - rag-network
     restart: unless-stopped
-
-volumes:
-  ollama_data:
 
 networks:
   rag-network:

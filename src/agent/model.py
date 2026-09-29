@@ -68,6 +68,7 @@ class LLMFactory:
             ],
             temperature=temperature,
             max_tokens=max_tokens,
-            timeout=120,
+            timeout=600,  # 10 minute timeout for Ollama/Mistral on CPU
+            request_timeout=600,  # HTTP request timeout
         )
         return response.choices[0].message.content

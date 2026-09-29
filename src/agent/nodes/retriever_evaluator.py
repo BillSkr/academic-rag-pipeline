@@ -20,6 +20,18 @@ from src.vectordb.chroma_store import ChromaVectorStore
 
 logger = logging.getLogger(__name__)
 
+# Global cross-encoder instance to avoid reloading on every query
+_CROSS_ENCODER = None
+
+
+def _get_cross_encoder():
+    """Lazily load and cache the cross-encoder model."""
+    global _CROSS_ENCODER
+    if _CROSS_ENCODER is None:
+        logger.info("Loading cross-encoder model (this happens once)")
+        _CROSS_ENCODER = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2")
+    return _CROSS_ENCODER
+
 
 def retrieve_and_evaluate(state: "RAGState") -> "RAGState":
     """Retrieve candidate chunks and decide whether they are sufficient."""
@@ -62,7 +74,7 @@ def retrieve_and_evaluate(state: "RAGState") -> "RAGState":
     # ── Cross-encoder re-ranking ──────────────────────────────────────────────
     # The cross-encoder scores (query, chunk) pairs more accurately than
     # cosine similarity and re-orders the candidates accordingly.
-    cross_encoder = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2")
+    cross_encoder = _get_cross_encoder()
     rerank_candidates = [(state["current_query"], c["document"]) for c in chunks]
     rerank_scores = cross_encoder.predict(rerank_candidates)
 
