@@ -1,7 +1,7 @@
 """Integration tests for the full RAG LangGraph pipeline.
 
 These tests verify that the graph can execute all nodes end-to-end
-using mocked external dependencies (LLM, embedder, vector store, cross-encoder).
+using mocked external dependencies (LLM, embedder, vector store).
 
 The graph flow is:
     analyze_query → retrieve_and_evaluate → synthesize_answer
@@ -31,15 +31,13 @@ def _make_initial_state(query: str = "What is the role of SOD1 in ALS?") -> dict
 
 # ──────────────────────────── Tests ──────────────────────────────────────────
 
-@patch("src.agent.nodes.retriever_evaluator.OllamaEmbedder")
+@patch("src.agent.nodes.retriever_evaluator.LocalEmbedder")
 @patch("src.agent.nodes.retriever_evaluator.ChromaVectorStore")
-@patch("src.agent.nodes.retriever_evaluator.CrossEncoder")
 @patch("src.agent.nodes.query_analyzer.LLMFactory")    # Patch the class, not the method
 @patch("src.agent.nodes.synthesizer.LLMFactory")       # Patch the class, not the method
 def test_full_graph_execution(
     mock_synth_llm_cls,
     mock_analyzer_llm_cls,
-    mock_cross_encoder_cls,
     mock_vector_store_cls,
     mock_embedder_cls,
 ):
@@ -75,10 +73,6 @@ def test_full_graph_execution(
             "metadata": {"title": "Test Paper", "year": "2023"},
         }
     ]
-
-    # Cross-encoder assigns a high re-ranking score to the chunk
-    cross_encoder_instance = mock_cross_encoder_cls.return_value
-    cross_encoder_instance.predict.return_value = [0.9]
 
     # ── Synthesizer mock ─────────────────────────────────────────────────────
     synth_instance = mock_synth_llm_cls.return_value
