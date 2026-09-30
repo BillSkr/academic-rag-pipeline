@@ -7,8 +7,8 @@ Exposes two endpoints:
 
 import asyncio
 import json
-import math
 import logging
+import math
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -104,7 +104,7 @@ async def query(request: QueryRequest):
                 asyncio.to_thread(graph.invoke, state),
                 timeout=600  # 10 minute timeout
             )
-            logger.info(f"Graph execution completed")
+            logger.info("Graph execution completed")
             
             response_text = final_state.get("response", "")
             citations = final_state.get("citations", [])
@@ -127,8 +127,8 @@ async def query(request: QueryRequest):
             logger.error("Graph execution timed out")
             yield f"data: {json.dumps({'status': 'completed', 'response': 'Request timed out. Please try again.', 'citations': []})}\n\n"
         except Exception as e:
-            logger.error(f"Graph execution error: {e}", exc_info=True)
-            yield f"data: {json.dumps({'status': 'completed', 'response': f'Error: {str(e)}', 'citations': []})}\n\n"
+            logger.exception("Graph execution error")
+            yield f"data: {json.dumps({'status': 'completed', 'response': f'Error: {e!s}', 'citations': []})}\n\n"
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
 

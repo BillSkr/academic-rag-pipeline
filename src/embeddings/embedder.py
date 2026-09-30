@@ -8,11 +8,8 @@ Configured via settings.EMBED_MODEL_NAME (default: all-MiniLM-L6-v2).
 """
 
 import logging
-from concurrent.futures import ThreadPoolExecutor
 
 from chromadb.utils.embedding_functions import DefaultEmbeddingFunction
-
-from src.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +35,7 @@ class LocalEmbedder:
             return
         self._initialised = True
 
-        logger.info(f"Loading local embedding model: all-MiniLM-L6-v2 (ONNX)")
+        logger.info("Loading local embedding model: all-MiniLM-L6-v2 (ONNX)")
         # ChromaDB's default embedding function uses ONNX and takes very little memory
         self.ef = DefaultEmbeddingFunction()
         logger.info("Local ONNX embedding model loaded successfully.")
@@ -71,4 +68,3 @@ class LocalEmbedder:
             A list of embedding vectors in the same order as `texts`.
         """
         return self.ef(texts)
-
