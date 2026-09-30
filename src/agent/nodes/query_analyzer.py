@@ -23,8 +23,9 @@ def analyze_query(state: "RAGState") -> "RAGState":
     user_query = state["user_query"]
     llm = LLMFactory()
 
-    system_prompt = """You are an academic query classifier. Decide if the following user query is related to academic research.
-    Respond with only 'YES' or 'NO'."""
+    system_prompt = """You are an academic query classifier. Decide if the following user query is related to academic research, science, medicine, or general knowledge that could be found in research papers.
+    Answer YES to almost all informational queries (e.g., medicine, drugs, technology). Only answer NO if it is a casual greeting or completely off-topic chat.
+    Respond with ONLY 'YES' or 'NO'."""
     
     response = llm.generate(system_prompt=system_prompt, user_prompt=user_query)
     response_lower = response.lower()
