@@ -26,8 +26,9 @@ dist/
 build/
 
 # Data & vector store (persisted via volumes, not baked into image)
-src/data/
-src/vectordb/chroma_collection/
+# We now upload the pre-built database directly to Render
+# src/data/
+# src/vectordb/chroma_collection/
 
 # IDE
 .vscode/
