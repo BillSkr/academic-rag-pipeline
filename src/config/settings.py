@@ -30,7 +30,7 @@ class EnvSettings(BaseSettings):
     MAX_RETRIEVAL_ATTEMPTS: int = 3     # retry limit before giving up
 
     # ── LLM (used by LLMFactory via LiteLLM) ─────────────────────────────────
-    MODEL_NAME: str = "groq/llama3-8b-8192"  # LiteLLM model string for Groq
+    MODEL_NAME: str = "groq/llama-3.1-8b-instant"  # LiteLLM model string for Groq
     TEMPERATURE: float = 0.0
     MAX_TOKENS: int = 512  # reduced from 2048 for faster responses
 
