@@ -27,7 +27,7 @@ build/
 
 # Data & vector store (persisted via volumes, not baked into image)
 src/data/
-src/vectordb/
+src/vectordb/chroma_collection/
 
 # IDE
 .vscode/
