@@ -38,7 +38,26 @@ def cosine_similarity(v1: list[float], v2: list[float]) -> float:
     return dot_product / (mag1 * mag2)
 
 
-app = FastAPI(title="Academic RAG Assistant")
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Auto-build the vector store on startup if it is empty."""
+    try:
+        from src.vectordb.chroma_store import ChromaVectorStore
+        store = ChromaVectorStore()
+        count = store.collection.count()
+        if count == 0:
+            logger.info("Vector store is empty — building from corpus.json...")
+            await asyncio.to_thread(build_vector_store)
+            logger.info("Vector store built successfully on startup.")
+        else:
+            logger.info(f"Vector store already has {count} chunks — skipping build.")
+    except Exception as e:
+        logger.error(f"Startup build failed: {e}")
+    yield
+
+app = FastAPI(title="Academic RAG Assistant", lifespan=lifespan)
 
 # CORS middleware so the frontend (index.html) can call the API.
 app.add_middleware(
