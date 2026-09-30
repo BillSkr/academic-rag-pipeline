@@ -112,7 +112,7 @@ async def query(request: QueryRequest):
             logger.info(f"Response length: {len(response_text)}, Citations: {len(citations)}")
             
             # Save to cache if we got a valid response (evict oldest if at cap)
-            if not final_state.get("rejected") and query_embedding and response_text:
+            if not final_state.get("rejected") and query_embedding is not None and response_text:
                 if len(_semantic_cache) >= _MAX_CACHE_SIZE:
                     _semantic_cache.pop(0)
                 _semantic_cache.append({

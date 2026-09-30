@@ -53,9 +53,11 @@ class LocalEmbedder:
         if not text or not text.strip():
             raise ValueError("Input text must be a non-empty string.")
 
-        # DefaultEmbeddingFunction returns a list of embeddings
+        # DefaultEmbeddingFunction returns a list of embeddings (numpy arrays)
         embedding_vector = self.ef([text])[0]
-        return embedding_vector
+        if hasattr(embedding_vector, "tolist"):
+            return embedding_vector.tolist()
+        return list(embedding_vector)
 
     def embed_batch(self, texts: list[str], max_retries: int = 3) -> list[list[float]]:
         """Embed a list of texts.
