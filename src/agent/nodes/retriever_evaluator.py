@@ -11,26 +11,12 @@ Responsibilities:
 
 import logging
 
-from sentence_transformers import CrossEncoder
-
 from src.agent.state import RAGState
 from src.config import settings
 from src.embeddings.embedder import LocalEmbedder
 from src.vectordb.chroma_store import ChromaVectorStore
 
 logger = logging.getLogger(__name__)
-
-# Global cross-encoder instance to avoid reloading on every query
-_CROSS_ENCODER = None
-
-
-def _get_cross_encoder():
-    """Lazily load and cache the cross-encoder model."""
-    global _CROSS_ENCODER
-    if _CROSS_ENCODER is None:
-        logger.info("Loading cross-encoder model (this happens once)")
-        _CROSS_ENCODER = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2")
-    return _CROSS_ENCODER
 
 
 def retrieve_and_evaluate(state: "RAGState") -> "RAGState":
@@ -71,16 +57,9 @@ def retrieve_and_evaluate(state: "RAGState") -> "RAGState":
         state["enough"] = False
         return state
 
-    # ── Cross-encoder re-ranking ──────────────────────────────────────────────
-    # The cross-encoder scores (query, chunk) pairs more accurately than
-    # cosine similarity and re-orders the candidates accordingly.
-    cross_encoder = _get_cross_encoder()
-    rerank_candidates = [(state["current_query"], c["document"]) for c in chunks]
-    rerank_scores = cross_encoder.predict(rerank_candidates)
-
-    # Sort descending by cross-encoder score
-    scored_chunks = sorted(zip(rerank_scores, chunks), key=lambda x: x[0], reverse=True)
-    chunks = [chunk for _, chunk in scored_chunks]
+    # Sort descending by distance (since Chroma stores distance, lower is better, so we sort ascending by distance, meaning reverse=False)
+    scored_chunks = sorted(chunks, key=lambda x: x["distance"])
+    chunks = scored_chunks
 
     state["retrieved_chunks"] = chunks
     state["enough"] = True   # we have at least one valid chunk

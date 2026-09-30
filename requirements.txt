@@ -38,7 +38,7 @@ tqdm>=4.66.0
 tiktoken>=0.5.0
 
 # Cross-encoder re-ranking of retrieved chunks
-sentence-transformers>=2.2.0
+# removed sentence-transformers to save memory on free tiers
 
 # ── Evaluation dependencies (scripts/evaluate_ragas.py only) ─────────────────
 # These are only needed when running the offline RAGAS evaluation script.

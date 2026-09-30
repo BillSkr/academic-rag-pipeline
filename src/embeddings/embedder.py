@@ -1,7 +1,7 @@
 """
 Embedding utilities for the Academic RAG Assistant.
 
-Provides LocalEmbedder — a singleton wrapper around sentence-transformers.
+Provides LocalEmbedder — a singleton wrapper around chromadb's DefaultEmbeddingFunction (ONNX).
 Supports single-text embedding and parallel batch embedding.
 
 Configured via settings.EMBED_MODEL_NAME (default: all-MiniLM-L6-v2).
@@ -10,7 +10,7 @@ Configured via settings.EMBED_MODEL_NAME (default: all-MiniLM-L6-v2).
 import logging
 from concurrent.futures import ThreadPoolExecutor
 
-from sentence_transformers import SentenceTransformer
+from chromadb.utils.embedding_functions import DefaultEmbeddingFunction
 
 from src.config import settings
 
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 class LocalEmbedder:
-    """Singleton wrapper around a local sentence-transformers model.
+    """Singleton wrapper around a lightweight local ONNX embedding model.
 
     Implemented as a singleton to avoid reloading the model into memory
     multiple times across different modules.
@@ -38,11 +38,10 @@ class LocalEmbedder:
             return
         self._initialised = True
 
-        model_name = getattr(settings, "EMBED_MODEL_NAME", "all-MiniLM-L6-v2")
-        logger.info(f"Loading local embedding model: {model_name}")
-        # Load the model explicitly on CPU to ensure it works anywhere
-        self.model = SentenceTransformer(model_name, device='cpu')
-        logger.info("Local embedding model loaded successfully.")
+        logger.info(f"Loading local embedding model: all-MiniLM-L6-v2 (ONNX)")
+        # ChromaDB's default embedding function uses ONNX and takes very little memory
+        self.ef = DefaultEmbeddingFunction()
+        logger.info("Local ONNX embedding model loaded successfully.")
 
     def embed(self, text: str, max_retries: int = 3) -> list[float]:
         """Convert a string of text into a dense vector.
@@ -57,8 +56,9 @@ class LocalEmbedder:
         if not text or not text.strip():
             raise ValueError("Input text must be a non-empty string.")
 
-        embedding_vector = self.model.encode(text, show_progress_bar=False)
-        return embedding_vector.tolist()
+        # DefaultEmbeddingFunction returns a list of embeddings
+        embedding_vector = self.ef([text])[0]
+        return embedding_vector
 
     def embed_batch(self, texts: list[str], max_retries: int = 3) -> list[list[float]]:
         """Embed a list of texts.
@@ -70,6 +70,5 @@ class LocalEmbedder:
         Returns:
             A list of embedding vectors in the same order as `texts`.
         """
-        embeddings = self.model.encode(texts, show_progress_bar=False)
-        return [emb.tolist() for emb in embeddings]
+        return self.ef(texts)
 
