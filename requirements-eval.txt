@@ -1,0 +1,7 @@
+-r requirements.txt
+
+# Offline RAGAS evaluation only (scripts/evaluate_ragas.py)
+ragas>=0.1.0
+datasets>=2.10.0
+langchain-core>=0.1.0
+langchain-ollama

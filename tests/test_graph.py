@@ -31,7 +31,7 @@ def _make_initial_state(query: str = "What is the role of SOD1 in ALS?") -> dict
 
 # ──────────────────────────── Tests ──────────────────────────────────────────
 
-@patch("src.agent.nodes.retriever_evaluator.OllamaEmbedder")
+@patch("src.agent.nodes.retriever_evaluator.LocalEmbedder")
 @patch("src.agent.nodes.retriever_evaluator.ChromaVectorStore")
 @patch("src.agent.nodes.retriever_evaluator.CrossEncoder")
 @patch("src.agent.nodes.query_analyzer.LLMFactory")    # Patch the class, not the method
@@ -48,7 +48,7 @@ def test_full_graph_execution(
     Mocking strategy:
     - LLMFactory is patched at the class level so that LLMFactory() inside each
       node returns a fully controlled MagicMock instance.
-    - OllamaEmbedder and ChromaVectorStore are also class-patched so their
+    - LocalEmbedder and ChromaVectorStore are also class-patched so their
       constructors return mock instances.
     """
 
